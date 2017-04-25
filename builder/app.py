@@ -158,12 +158,13 @@ def activate_user(userid):
 
 @app.route('/')
 def index():
-    if current_user.is_anonymous:
-        return "You should probably log in"
-    if current_user.active:
-        # return redirect(url_for('oauth_authorize', provider='github'))
-        return "Hi there %s" % current_user.real_name
-    return "Almoster there, %s: You're not active yet" % current_user.real_name
+    return render_template('builder.html', user=current_user)
+    # if current_user.is_anonymous:
+    #     return "You should probably log in"
+    # if current_user.active:
+    #     # return redirect(url_for('oauth_authorize', provider='github'))
+    #
+    # return "Almoster there, %s: You're not active yet" % current_user.real_name
 
 # We may need to load a node without knowing its original class.
 BASE_CLASS = models.E1CrmEntity

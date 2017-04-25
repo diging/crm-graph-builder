@@ -64,7 +64,6 @@ class GitHubSignin(OAuthSignIn):
                   'redirect_uri': self.get_callback_url()}
         )
         data = oauth_session.get('user').json()
-        print data
         return {
             'social_id': 'github$' + str(data['id']),
             'username': data.get('login'),
