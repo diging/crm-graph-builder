@@ -195,6 +195,12 @@ def properties_for_model(model):
     return filter(lambda p: p.startswith('P'), dir(model))
 
 
+def get_subclasses(e_class):
+    return map(lambda c_name: getattr(models, c_name),
+               filter(lambda c_name: e_class in getattr(models, c_name).mro() and e_class.__name__ != c_name,
+                      filter(lambda c_name: c_name.startswith('E'), dir(models))))
+
+
 def get_node(model, node_id):
     """
     Retrieve a data node as an instance of ``model``. If no such node is found,
@@ -232,11 +238,7 @@ class Serializer(object):
 
 
 class ClassSerializer(Serializer):
-    def __init__(self, *args, **kwargs):
-        super(ClassSerializer, self).__init__(*args, **kwargs)
-
-
-    def to_json(self, raw=False):
+    def to_json(self, raw=False, include_subclasses=True):
         if isinstance(self.instance, list):
             return json.jsonify({
                 'classes': [ClassSerializer(instance).to_json(raw=True) for instance in self.instance]
@@ -244,10 +246,18 @@ class ClassSerializer(Serializer):
 
         # Single instance.
         data = {
-                'name': self.instance.__name__,
-                'url': url_for('entity_api', class_name=self.instance.__name__),
-                'description': self.instance.__doc__
+            'name': self.instance.__name__,
+            'url': url_for('entity_api', class_name=self.instance.__name__),
+            'description': self.instance.__doc__,
+
         }
+        if include_subclasses:
+            data.update({
+                'subclasses': [
+                    ClassSerializer(class_obj).to_json(raw=True, include_subclasses=False)
+                    for class_obj in get_subclasses(self.instance)
+                ]
+            })
         if raw:
             return data
         return json.jsonify(data)
@@ -332,11 +342,14 @@ class PropertySerializer(Serializer):
             description = _rel_model.description
 
         data = {
-            'name': self.property_name,
-            'url': property_url(self.source, self.property_name),
-            'description': description,
-            'instances': instances,
-            'source': EntitySerializer(self.source).to_json(raw=True),
+            'property': {
+                'name': self.property_name,
+                'url': property_url(self.source, self.property_name),
+                'description': description,
+                'instances': instances,
+                'range': ClassSerializer(self.instance.definition['node_class']).to_json(raw=True),
+                'source': EntitySerializer(self.source).to_json(raw=True),
+            }
         }
         if hasattr(self, 'target'):
             data.update({
@@ -383,11 +396,17 @@ class PropertySerializer(Serializer):
 
 
 class EntitySerializer(Serializer):
-    def to_json(self, props=False, all_classes=False, raw=False):
+    def to_json(self, props=False, all_classes=False, raw=False, include_instances=True):
         if isinstance(self.instance, list):
             data = {
-                'entities': [EntitySerializer(node).to_json(raw=True)
-                             for node in self.instance]
+                'class': {
+                    'name': self.model.__name__,
+                    'url': url_for('entity_api', class_name=self.model.__name__),
+                    'description': self.model.__doc__,
+                    'instances': [EntitySerializer(node).to_json(raw=True)
+                                 for node in self.instance],
+                    'subclasses': [ClassSerializer(class_obj).to_json(raw=True) for class_obj in get_subclasses(self.model)]
+                }
             }
             if raw:
                 return data
@@ -403,8 +422,10 @@ class EntitySerializer(Serializer):
                                node_id=self.instance.id),
                 'primary_class': {
                     'name': _primary_label,
-                    'url': url_for('entity_api', class_name=_primary_label,
-                                   node_id=self.instance.id)
+                    'url': url_for('entity_api', class_name=_primary_label),
+                    'instance_url': url_for('entity_api',
+                                            class_name=_primary_label,
+                                            node_id=self.instance.id)
                 },
                 'instance_of': {
                     'name': _class_name,
@@ -455,21 +476,12 @@ class EntitySerializer(Serializer):
 def property_data(instance):
     prop_data = []
     for prop in properties_for_model(instance.__class__):
-        targets = getattr(instance, prop).all()
-        if len(targets) == 0:
+        relation = getattr(instance, prop)
+        if len(relation.all()) == 0:
             continue
-        prop_data.append({
-            'name': prop,
-            'url': property_url(instance, prop),
-            'targets': [{
-                'id': target.id,
-                'instance_of': {
-                    'name': target.__class__.__name__,
-                    'url': url_for('entity_api', class_name=target.__class__.__name__)
-                },
-                'url': entity_url(target)
-            } for target in targets]
-        })
+        serializer = PropertySerializer(relation, source=instance, property_name=prop)
+        prop_data.append(serializer.to_json(raw=True, include_source=False))
+
     return prop_data
 
 
@@ -486,7 +498,7 @@ class NodeMethodView(MethodView):
                 }
                 return json.jsonify(data), 400
 
-        return EntitySerializer(nodeset.all()).to_json()
+        return EntitySerializer(nodeset.all(), model=model).to_json()
 
     @app.errorhandler(404)
     def get(self, class_name=None, node_id=None, property_name=None,
