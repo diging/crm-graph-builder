@@ -723,7 +723,7 @@ def initialize_database():
     db.create_all()
 
 
-@app.cli.command('createadmin', with_appcontext=False):
+@app.cli.command('createadmin', with_appcontext=False)
 def create_admin():
     social_id = app.config.get('ADMIN_SOCIALID')
     nickname = app.config.get('ADMIN_NICKNAME')
@@ -736,7 +736,7 @@ def create_admin():
     user.admin = True
     user.active = True
     db.session.commit()
-        
+
 
 @app.cli.command('promote')
 def promote():
