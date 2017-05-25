@@ -1,3 +1,4 @@
+from urlparse import urljoin
 from flask import Flask, request, abort, url_for, redirect, render_template, flash, json
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user,\
@@ -33,6 +34,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = settings.SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
 app.config['OAUTH_CREDENTIALS'] = settings.OAUTH_CREDENTIALS
+app.config['STATIC_URL'] = settings.STATIC_URL
+app.config['ADMIN_SOCIALID'] = settings.ADMIN_SOCIALID
+app.config['ADMIN_NICKNAME'] = settings.ADMIN_NICKNAME
 
 db = SQLAlchemy(app)
 lm = LoginManager(app)
@@ -683,6 +687,15 @@ class NodeMethodView(MethodView):
         return serializer.to_json(include_description=True)
 
 
+@app.endpoint('static')
+def static(filename):
+    static_url = app.config.get('STATIC_URL')
+
+    if static_url:
+        return redirect(urljoin(static_url, filename))
+    return app.send_static_file(filename)
+
+
 # We're allowing both PUT and POST on views in which they should be mutually
 #  exclusive; this is because ``url_for`` qualifies URL resolution with the
 #  current method. We therefore explicitly raise 405 inside the put() and post()
@@ -709,6 +722,21 @@ app.add_url_rule("/entities/<string:class_name>/<int:node_id>"
 def initialize_database():
     db.create_all()
 
+
+@app.cli.command('createadmin', with_appcontext=False):
+def create_admin():
+    social_id = app.config.get('ADMIN_SOCIALID')
+    nickname = app.config.get('ADMIN_NICKNAME')
+    user = User.query.filter_by(social_id=social_id).first()
+    if not user:
+        user = User(social_id=social_id,
+                    nickname=nickname)
+        db.session.add(user)
+        db.session.commit()
+    user.admin = True
+    user.active = True
+    db.session.commit()
+        
 
 @app.cli.command('promote')
 def promote():

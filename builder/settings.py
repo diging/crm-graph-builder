@@ -10,4 +10,8 @@ OAUTH_CREDENTIALS = {
     },
 }
 SECRET_KEY = os.environ.get('SECRET_KEY', 'asdf')
-SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/db.sqlite'
+SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:////tmp/db.sqlite')
+STATIC_URL = os.environ.get('STATIC_URL')
+
+ADMIN_SOCIALID = os.environ.get('ADMIN_SOCIALID')
+ADMIN_NICKNAME = os.environ.get('ADMIN_NICKNAME')
