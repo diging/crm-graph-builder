@@ -11,12 +11,11 @@ from neomodel import config
 import neomodel
 config.DATABASE_URL = settings.NEO4J_URL
 
-import sys
-sys.path.append('../cidoc-crm-neo4j')   # TODO: package and distribute this.
 from crm import models
 
+
 fields = {
-    'value': lambda: neomodel.StringProperty(index=True),
+    'value': lambda: neomodel.StringProperty(index=True, unique=True),
     'created': lambda: neomodel.DateTimeProperty(default_now=True),
     'created_by': lambda: neomodel.StringProperty(index=True),
 }
@@ -35,10 +34,10 @@ app.config['SECRET_KEY'] = settings.SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
 app.config['OAUTH_CREDENTIALS'] = settings.OAUTH_CREDENTIALS
 
-
 db = SQLAlchemy(app)
 lm = LoginManager(app)
 lm.login_view = 'index'
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
