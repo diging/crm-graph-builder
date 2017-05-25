@@ -30,7 +30,7 @@ rel_fields = {
 }
 models.build_models(settings.CRM_URL, fields=fields, rel_fields=rel_fields)
 
-app = Flask(__name__, static_url_path='static')
+app = Flask(__name__, static_url_path=settings.STATIC_URL)
 app.config['SECRET_KEY'] = settings.SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
 app.config['OAUTH_CREDENTIALS'] = settings.OAUTH_CREDENTIALS
