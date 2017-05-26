@@ -165,7 +165,7 @@ def activate_user(userid):
 
 @app.context_processor
 def base_url():
-    return dict(base_url=config.get('BASE_PATH'))
+    return dict(base_url=app.config.get('BASE_PATH'))
 
 
 @app.route('/')
