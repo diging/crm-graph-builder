@@ -58,7 +58,7 @@
             {% endif %}
             {% if user.active %}
             <builder id="builder"></builder>
-            <script src="/static/js/builder.js"></script>
+            <script src="{{ url_for('static', filename="js/builder.js")}}"></script>
             {% else %}
             <div class="text-center">
                 <div class="alert alert-info">
