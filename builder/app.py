@@ -687,13 +687,13 @@ class NodeMethodView(MethodView):
         return serializer.to_json(include_description=True)
 
 
-@app.endpoint('static')
-def static(filename):
-    static_url = app.config.get('STATIC_URL')
-
-    if static_url:
-        return redirect(urljoin(static_url, filename))
-    return app.send_static_file(filename)
+# @app.endpoint('static')
+# def static(filename):
+#     static_url = app.config.get('STATIC_URL')
+#
+#     if static_url:
+#         return redirect(urljoin(static_url, filename))
+#     return app.send_static_file(filename)
 
 
 # We're allowing both PUT and POST on views in which they should be mutually
