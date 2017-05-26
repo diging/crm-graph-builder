@@ -8,7 +8,7 @@ var ClassList = {
     },
     mounted: function() {
         var self = this;
-        this.$http.get('/entities').then(function(response) {
+        this.$http.get(BASE_PATH + 'entities').then(function(response) {
             console.log(response);
             self.classes = response.body.classes;
         })
