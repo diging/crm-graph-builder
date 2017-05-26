@@ -37,6 +37,8 @@ app.config['OAUTH_CREDENTIALS'] = settings.OAUTH_CREDENTIALS
 app.config['STATIC_URL'] = settings.STATIC_URL
 app.config['ADMIN_SOCIALID'] = settings.ADMIN_SOCIALID
 app.config['ADMIN_NICKNAME'] = settings.ADMIN_NICKNAME
+app.config['ADMIN_SOCIAL_PROVIDER'] = settings.ADMIN_SOCIAL_PROVIDER
+ADMIN_SOCIAL_PROVIDER
 app.config['SERVER_NAME'] = settings.SERVER_NAME
 
 db = SQLAlchemy(app)
@@ -69,7 +71,6 @@ def logout():
 
 @app.route('/authorize/<provider>')
 def oauth_authorize(provider):
-    print url_for('index', _external=True)
     if not current_user.is_anonymous:
         return redirect(url_for('index', _external=True))
     oauth = OAuthSignIn.get_provider(provider)
@@ -78,7 +79,6 @@ def oauth_authorize(provider):
 
 @app.route('/callback/<provider>')
 def oauth_callback(provider):
-    print url_for('index', _external=True)
     if not current_user.is_anonymous:
         return redirect(url_for('index', _external=True))
     oauth = OAuthSignIn.get_provider(provider)
@@ -730,7 +730,8 @@ def initialize_database():
 def create_admin():
     social_id = app.config.get('ADMIN_SOCIALID')
     nickname = app.config.get('ADMIN_NICKNAME')
-    user = User.query.filter_by(social_id=social_id).first()
+    provider = app.config.get('ADMIN_SOCIAL_PROVIDER')
+    user = User.query.filter_by(social_id='%s$%s' % (provider, social_id)).first()
     if not user:
         user = User(social_id=social_id,
                     nickname=nickname)

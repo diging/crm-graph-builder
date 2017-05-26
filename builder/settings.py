@@ -15,5 +15,6 @@ STATIC_URL = os.environ.get('STATIC_URL')
 
 ADMIN_SOCIALID = os.environ.get('ADMIN_SOCIALID')
 ADMIN_NICKNAME = os.environ.get('ADMIN_NICKNAME')
+ADMIN_SOCIAL_PROVIDER = os.environ.get('ADMIN_SOCIAL_PROVIDER')
 
 SERVER_NAME = os.environ.get('SERVER_NAME')
