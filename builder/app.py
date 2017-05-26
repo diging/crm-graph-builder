@@ -1,11 +1,11 @@
 from urlparse import urljoin
 from flask import Flask, request, abort, url_for, redirect, render_template, flash, json
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, logout_user,\
-    current_user, login_required
-from oauth import OAuthSignIn
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
+
 from flask.views import MethodView
 from builder import settings
+from builder.oauth import OAuthSignIn, GitHubSignin
 import optparse
 
 from neomodel import config
@@ -71,7 +71,7 @@ def logout():
 def oauth_authorize(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index', _external=True))
-    oauth = OAuthSignIn.get_provider(provider)
+    oauth = GitHubSignin.get_provider(provider)
     return oauth.authorize()
 
 
@@ -79,7 +79,7 @@ def oauth_authorize(provider):
 def oauth_callback(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index', _external=True))
-    oauth = OAuthSignIn.get_provider(provider)
+    oauth = GitHubSignin.get_provider(provider)
     data = oauth.callback()
     if data is None:
         flash('Authentication failed.')
