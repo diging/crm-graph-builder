@@ -39,6 +39,8 @@ app.config['ADMIN_SOCIALID'] = settings.ADMIN_SOCIALID
 app.config['ADMIN_NICKNAME'] = settings.ADMIN_NICKNAME
 app.config['ADMIN_SOCIAL_PROVIDER'] = settings.ADMIN_SOCIAL_PROVIDER
 app.config['SERVER_NAME'] = settings.SERVER_NAME
+app.config['BASE_PATH'] = settings.BASE_PATH
+
 
 db = SQLAlchemy(app)
 lm = LoginManager(app)
@@ -159,6 +161,11 @@ def activate_user(userid):
         'admin': user.admin,
         'active': user.active
     })
+
+
+@app.context_processor
+def base_url():
+    return dict(base_url=config.get('BASE_PATH'))
 
 
 @app.route('/')
