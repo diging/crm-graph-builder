@@ -38,7 +38,6 @@ app.config['STATIC_URL'] = settings.STATIC_URL
 app.config['ADMIN_SOCIALID'] = settings.ADMIN_SOCIALID
 app.config['ADMIN_NICKNAME'] = settings.ADMIN_NICKNAME
 app.config['ADMIN_SOCIAL_PROVIDER'] = settings.ADMIN_SOCIAL_PROVIDER
-ADMIN_SOCIAL_PROVIDER
 app.config['SERVER_NAME'] = settings.SERVER_NAME
 
 db = SQLAlchemy(app)
