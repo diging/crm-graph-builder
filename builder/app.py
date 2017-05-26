@@ -71,7 +71,7 @@ def logout():
 def oauth_authorize(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index', _external=True))
-    oauth = GitHubSignin.get_provider(provider)
+    oauth = OAuthSignIn.get_provider(provider)
     return oauth.authorize()
 
 
@@ -79,7 +79,7 @@ def oauth_authorize(provider):
 def oauth_callback(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index', _external=True))
-    oauth = GitHubSignin.get_provider(provider)
+    oauth = OAuthSignIn.get_provider(provider)
     data = oauth.callback()
     if data is None:
         flash('Authentication failed.')
